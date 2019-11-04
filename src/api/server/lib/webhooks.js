@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import fetch from 'node-fetch';
 import WebhooksService from '../services/webhooks';
-
+import winston from 'winston';
 const trigger = async ({ event, payload }) => {
 	const webhooks = await WebhooksService.getWebhooks();
 	for (const webhook of webhooks) {

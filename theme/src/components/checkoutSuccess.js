@@ -12,55 +12,45 @@ const getCheckoutField = (checkoutFields, fieldName) => {
 	}
 	return null;
 };
-
+const FullnameField = ({ order, checkoutFields }) => {
+	return <ShippingFieldDiv label={text.phone} value={order.customerName} />;
+};
 const MobileField = ({ order, checkoutFields }) => {
-	const checkoutField = getCheckoutField(checkoutFields, 'mobile');
-	return checkoutField && order.mobile !== '' ? (
-		<ShippingFieldDiv
-			label={helper.getCheckoutFieldLabel(checkoutField)}
-			value={order.mobile}
-		/>
-	) : null;
+	return <ShippingFieldDiv label={text.phone} value={order.customerMobile} />;
 };
 
-const CityField = ({ order, checkoutFields }) => {
-	const checkoutField = getCheckoutField(checkoutFields, 'city');
-	return checkoutField && order.shipping_address.city !== '' ? (
+const AddressField = ({ order, checkoutFields }) => {
+	return (
 		<ShippingFieldDiv
-			label={helper.getCheckoutFieldLabel(checkoutField)}
-			value={order.shipping_address.city}
+			label={text.address}
+			value={order.shippingAddress.address}
 		/>
-	) : null;
+	);
 };
 
 const CommentsField = ({ order, checkoutFields }) => {
-	const checkoutField = getCheckoutField(checkoutFields, 'comments');
-	return checkoutField && order.comments !== '' ? (
+	return (
 		<ShippingFieldDiv
-			label={helper.getCheckoutFieldLabel(checkoutField)}
-			value={order.comments}
+			label={text.comments}
+			value={order.customerComment || ''}
 		/>
-	) : null;
+	);
 };
 
-const ShippingFields = ({ order, shippingMethod }) => {
-	let shippingFields = null;
-	if (
-		shippingMethod &&
-		shippingMethod.fields &&
-		shippingMethod.fields.length > 0
-	) {
-		shippingFields = shippingMethod.fields.map((field, index) => {
-			const fieldLabel = helper.getShippingFieldLabel(field);
-			const fieldValue = order.shipping_address[field.key];
-
-			return (
-				<ShippingFieldDiv key={index} label={fieldLabel} value={fieldValue} />
-			);
-		});
-	}
-
-	return <div>{shippingFields}</div>;
+const ShippingFields = ({ order, shippingMethods }) => {
+	let shippingMethod;
+	shippingMethods.map(item => {
+		if (item.id == order.shippingMethodId) {
+			shippingMethod = item.name;
+		}
+	});
+	return (
+		<ShippingFieldDiv
+			key={order.id}
+			label={text.shippingMethods}
+			value={shippingMethod}
+		/>
+	);
 };
 
 const ShippingFieldDiv = ({ label, value }) => (
@@ -73,22 +63,22 @@ const ShippingFieldDiv = ({ label, value }) => (
 const OrderItem = ({ item, settings }) => (
 	<div className="columns is-mobile is-gapless checkout-success-row">
 		<div className="column is-6">
-			{item.name}
+			{item.itemName}
 			<br />
-			<span>{item.variant_name}</span>
+			{/* <span>{item.variant_name}</span> */}
 		</div>
 		<div className="column is-2 has-text-right">
-			{helper.formatCurrency(item.price, settings)}
+			{helper.formatCurrency(item.itemPrice, settings)}
 		</div>
 		<div className="column is-2 has-text-centered">{item.quantity}</div>
 		<div className="column is-2 has-text-right">
-			{helper.formatCurrency(item.price_total, settings)}
+			{helper.formatCurrency(item.itemPrice * item.quantity, settings)}
 		</div>
 	</div>
 );
 
 const OrderItems = ({ items, settings }) => {
-	if (items && items.length > 0) {
+	if (items) {
 		const rows = items.map(item => (
 			<OrderItem key={item.id} item={item} settings={settings} />
 		));
@@ -101,10 +91,29 @@ const CheckoutSuccess = ({
 	order,
 	settings,
 	pageDetails,
-	shippingMethod,
+	shippingMethods,
+	paymentMethods,
 	checkoutFields
 }) => {
-	if (order && order.items && order.items.length > 0) {
+	let shippingMethod;
+	shippingMethods.map(item => {
+		if (item.id == order.shippingMethodId) {
+			shippingMethod = item.name;
+		}
+	});
+	let paymentMethod;
+	paymentMethods.map(item => {
+		if (item.id == order.paymentMethodId) {
+			paymentMethod = item.name;
+		}
+	});
+
+	if (order && order.item && order.item.length > 0) {
+		let totalPrice = 0;
+
+		order.item.map(value => {
+			totalPrice = totalPrice + value.itemPrice * value.quantity;
+		});
 		return (
 			<div className="checkout-success-details">
 				<h1 className="checkout-success-title">
@@ -124,18 +133,19 @@ const CheckoutSuccess = ({
 				<div className="columns" style={{ marginBottom: '3rem' }}>
 					<div className="column is-6">
 						<b>{text.shipping}</b>
+						<FullnameField order={order} checkoutFields={checkoutFields} />
 						<MobileField order={order} checkoutFields={checkoutFields} />
-						<CityField order={order} checkoutFields={checkoutFields} />
-						<ShippingFields order={order} shippingMethod={shippingMethod} />
+						<AddressField order={order} checkoutFields={checkoutFields} />
+						<ShippingFields order={order} shippingMethods={shippingMethods} />
 						<CommentsField order={order} checkoutFields={checkoutFields} />
 					</div>
 
 					<div className="column is-6">
-						<b>{text.orderNumber}</b>: {order.number}
+						<b>{text.orderNumber}</b>: {order.orderCode}
 						<br />
-						<b>{text.shippingMethod}</b>: {order.shipping_method}
+						<b>{text.shippingMethod}</b>: {shippingMethod}
 						<br />
-						<b>{text.paymentMethod}</b>: {order.payment_method}
+						<b>{text.paymentMethod}</b>: {paymentMethod}
 						<br />
 					</div>
 				</div>
@@ -155,23 +165,23 @@ const CheckoutSuccess = ({
 					</div>
 				</div>
 
-				<OrderItems items={order.items} settings={settings} />
+				<OrderItems items={order.item} settings={settings} />
 
 				<div className="columns">
 					<div className="column is-offset-7 checkout-success-totals">
-						<div>
+						{/* <div>
 							<span>{text.subtotal}:</span>
 							<span>{helper.formatCurrency(order.subtotal, settings)}</span>
-						</div>
-						<div>
+						</div> */}
+						{/* <div>
 							<span>{text.shipping}:</span>
 							<span>
 								{helper.formatCurrency(order.shipping_total, settings)}
 							</span>
-						</div>
+						</div> */}
 						<div>
 							<b>{text.grandTotal}:</b>
-							<b>{helper.formatCurrency(order.grand_total, settings)}</b>
+							<b>{helper.formatCurrency(totalPrice, settings)}</b>
 						</div>
 					</div>
 				</div>

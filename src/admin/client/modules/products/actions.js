@@ -228,14 +228,6 @@ export function fetchProducts() {
 				.catch(error => {
 					dispatch(receiveProductsError(error));
 				});
-			// return api.products
-			// 	.list(filter)
-			// 	.then(({ status, json }) => {
-			// 		dispatch(receiveProducts(json));
-			// 	})
-			// 	.catch(error => {
-			// 		dispatch(receiveProductsError(error));
-			// 	});
 		}
 	};
 }
@@ -256,14 +248,6 @@ export function fetchMoreProducts() {
 				.catch(error => {
 					dispatch(receiveProductsError(error));
 				});
-			// return api.products
-			// 	.list(filter)
-			// 	.then(({ status, json }) => {
-			// 		dispatch(receiveProductsMore(json));
-			// 	})
-			// 	.catch(error => {
-			// 		dispatch(receiveProductsError(error));
-			// 	});
 		}
 	};
 }
@@ -279,12 +263,6 @@ export function deleteCurrentProduct() {
 				.catch(error => {
 					console.log(err);
 				});
-			// return api.products
-			// 	.delete(product.id)
-			// 	.then(() => {})
-			// 	.catch(err => {
-			// 		console.log(err);
-			// 	});
 		}
 	};
 }
@@ -293,7 +271,6 @@ export function deleteProducts() {
 	return (dispatch, getState) => {
 		const state = getState();
 		let promises = state.products.selected.map(productId => {
-			// api.products.delete(productId)
 			axios
 				.delete(baseUrl + '/products/' + productId)
 				.then(() => {})
@@ -318,7 +295,6 @@ export function setCategory(category_id) {
 	return (dispatch, getState) => {
 		const state = getState();
 		let promises = state.products.selected.map(productId =>
-			// api.products.update(productId, { category_id: category_id })
 			axios({
 				method: 'POST',
 				url: `${baseUrl}/products/${productId}`,
@@ -353,15 +329,6 @@ export function updateProduct(data) {
 			.catch(error => {
 				dispatch(errorUpdateProduct(error));
 			});
-		// return api.products
-		// 	.update(data.id, data)
-		// 	.then(({ status, json }) => {
-		// 		const product = fixProductData(json);
-		// 		dispatch(receiveUpdateProduct(product));
-		// 	})
-		// 	.catch(error => {
-		// 		dispatch(errorUpdateProduct(error));
-		// 	});
 	};
 }
 
@@ -381,13 +348,6 @@ export function createProduct(history) {
 			dispatch(successCreateProduct(response.data.id));
 			history.push('/admin/product/' + response.data.id);
 		});
-		// return api.products
-		// 	.create(productDraft)
-		// 	.then(({ status, json }) => {
-		// 		dispatch(successCreateProduct(json.id));
-		// 		history.push('/admin/product/' + json.id);
-		// 	})
-		// 	.catch(error => {});
 	};
 }
 
@@ -417,15 +377,6 @@ export function fetchProduct(id) {
 			.catch(error => {
 				dispatch(receiveProductError(error));
 			});
-		// return api.products
-		// 	.retrieve(id)
-		// 	.then(({ status, json }) => {
-		// 		const product = fixProductData(json);
-		// 		dispatch(receiveProduct(product));
-		// 	})
-		// 	.catch(error => {
-		// 		dispatch(receiveProductError(error));
-		// 	});
 	};
 }
 
@@ -437,12 +388,6 @@ export function fetchImages(productId) {
 				dispatch(receiveImages(response.data));
 			})
 			.catch(error => {});
-		// return api.products.images
-		// 	.list(productId)
-		// 	.then(({ status, json }) => {
-		// 		dispatch(receiveImages(json));
-		// 	})
-		// 	.catch(error => {});
 	};
 }
 
@@ -456,12 +401,6 @@ export function fetchOptions(productId) {
 				dispatch(receiveOptions(response.data));
 			})
 			.catch(error => {});
-		// return api.products.options
-		// 	.list(productId)
-		// 	.then(({ status, json }) => {
-		// 		dispatch(receiveOptions(json));
-		// 	})
-		// 	.catch(error => {});
 	};
 }
 
@@ -473,12 +412,6 @@ export function fetchVariants(productId) {
 				dispatch(receiveVariants(response.data));
 			})
 			.catch(error => {});
-		// 	return api.products.variants
-		// 		.list(productId)
-		// 		.then(({ status, json }) => {
-		// 			dispatch(receiveVariants(json));
-		// 		})
-		// 		.catch(error => {});
 	};
 }
 
@@ -504,12 +437,6 @@ export function createVariant(productId) {
 				dispatch(receiveVariants(response.data));
 			})
 			.catch(error => {});
-		// return api.products.variants
-		// 	.create(productId, variant)
-		// 	.then(({ status, json }) => {
-		// 		dispatch(receiveVariants(json));
-		// 	})
-		// 	.catch(error => {});
 	};
 }
 
@@ -524,13 +451,6 @@ export function updateVariant(productId, variantId, variant) {
 				dispatch(receiveVariants(response.data));
 			})
 			.catch(error => {});
-
-		// return api.products.variants
-		// 	.update(productId, variantId, variant)
-		// 	.then(({ status, json }) => {
-		// 		dispatch(receiveVariants(json));
-		// 	})
-		// 	.catch(error => {});
 	};
 }
 
@@ -546,12 +466,6 @@ export function setVariantOption(productId, variantId, optionId, valueId) {
 				dispatch(receiveVariants(response.data));
 			})
 			.catch(error => {});
-		// return api.products.variants
-		// 	.setOption(productId, variantId, option)
-		// 	.then(({ status, json }) => {
-		// 		dispatch(receiveVariants(json));
-		// 	})
-		// 	.catch(error => {});
 	};
 }
 
@@ -566,12 +480,6 @@ export function createOptionValue(productId, optionId, valueName) {
 				dispatch(fetchOptions(productId));
 			})
 			.catch(error => {});
-		// return api.products.options.values
-		// 	.create(productId, optionId, { name: valueName })
-		// 	.then(({ status, json }) => {
-		// 		dispatch(fetchOptions(productId));
-		// 	})
-		// 	.catch(error => {});
 	};
 }
 
@@ -586,12 +494,6 @@ export function createOption(productId, option) {
 				dispatch(receiveOptions(response.data));
 			})
 			.catch(error => {});
-		// return api.products.options
-		// 	.create(productId, option)
-		// 	.then(({ status, json }) => {
-		// 		dispatch(receiveOptions(json));
-		// 	})
-		// 	.catch(error => {});
 	};
 }
 
@@ -606,12 +508,6 @@ export function updateOptionValue(productId, optionId, valueId, valueName) {
 				dispatch(fetchOptions(productId));
 			})
 			.catch(error => {});
-		// return api.products.options.values
-		// 	.update(productId, optionId, valueId, { name: valueName })
-		// 	.then(({ status, json }) => {
-		// 		dispatch(fetchOptions(productId));
-		// 	})
-		// 	.catch(error => {});
 	};
 }
 
@@ -626,12 +522,6 @@ export function updateOption(productId, optionId, option) {
 				dispatch(receiveOptions(response.data));
 			})
 			.catch(error => {});
-		// return api.products.options
-		// 	.update(productId, optionId, option)
-		// 	.then(({ status, json }) => {
-		// 		dispatch(receiveOptions(json));
-		// 	})
-		// 	.catch(error => {});
 	};
 }
 
@@ -645,12 +535,6 @@ export function deleteOptionValue(productId, optionId, valueId) {
 				dispatch(fetchOptions(productId));
 			})
 			.catch(error => {});
-		// return api.products.options.values
-		// 	.delete(productId, optionId, valueId)
-		// 	.then(({ status, json }) => {
-		// 		dispatch(fetchOptions(productId));
-		// 	})
-		// 	.catch(error => {});
 	};
 }
 
@@ -664,12 +548,6 @@ export function deleteOption(productId, optionId) {
 				dispatch(receiveOptions(response.data));
 			})
 			.catch(error => {});
-		// return api.products.options
-		// 	.delete(productId, optionId)
-		// 	.then(({ status, json }) => {
-		// 		dispatch(receiveOptions(json));
-		// 	})
-		// 	.catch(error => {});
 	};
 }
 
@@ -679,12 +557,6 @@ export function deleteVariant(productId, variantId) {
 			method: 'DELETE',
 			url: `${baseUrl}/products/${productId}/variants/${variantId}`
 		});
-		// return api.products.variants
-		// 	.delete(productId, variantId)
-		// 	.then(({ status, json }) => {
-		// 		dispatch(receiveVariants(json));
-		// 	})
-		// 	.catch(error => {});
 	};
 }
 
@@ -698,12 +570,6 @@ export function deleteImage(productId, imageId) {
 				dispatch(fetchImages(productId));
 			})
 			.catch(error => {});
-		// return api.products.images
-		// 	.delete(productId, imageId)
-		// 	.then(({ status, json }) => {
-		// 		dispatch(fetchImages(productId));
-		// 	})
-		// 	.catch(error => {});
 	};
 }
 
@@ -718,25 +584,17 @@ export function updateImage(productId, image) {
 				dispatch(fetchImages(productId));
 			})
 			.catch(error => {});
-		// return api.products.images
-		// 	.update(productId, image.id, image)
-		// 	.then(() => {
-		// 		dispatch(fetchImages(productId));
-		// 	})
-		// 	.catch(error => {});
 	};
 }
 
 export function updateImages(productId, images) {
 	return (dispatch, getState) => {
-		let promises = images.map(
-			image =>
-				axios({
-					method: 'PUT',
-					url: `${baseUrl}/products/${productId}/images/${image.id}`,
-					data: image
-				})
-			// api.products.images.update(productId, image.id, image)
+		let promises = images.map(image =>
+			axios({
+				method: 'PUT',
+				url: `${baseUrl}/products/${productId}/images/${image.id}`,
+				data: image
+			})
 		);
 
 		return Promise.all(promises)
@@ -763,14 +621,5 @@ export function uploadImages(productId, form) {
 			.catch(error => {
 				dispatch(imagesUploadEnd());
 			});
-		// return api.products.images
-		// 	.upload(productId, form)
-		// 	.then(() => {
-		// 		dispatch(imagesUploadEnd());
-		// 		dispatch(fetchImages(productId));
-		// 	})
-		// 	.catch(error => {
-		// 		dispatch(imagesUploadEnd());
-		// 	});
 	};
 }

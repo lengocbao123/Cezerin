@@ -13,6 +13,7 @@
   "images": "Images",
   "selected": "selected",
   "email": "Email",
+  "name":"Full name",
   "mobile": "Mobile",
   "country": "Country",
   "state": "State/Province",

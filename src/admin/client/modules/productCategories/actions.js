@@ -94,20 +94,6 @@ function imageUploadEnd() {
 export function fetchCategories() {
 	return dispatch => {
 		dispatch(requestCategories());
-		// return api.productCategories
-		// 	.list()
-		// 	.then(({ status, json }) => {
-		// 		json.forEach((element, index, theArray) => {
-		// 			if (theArray[index].name === '') {
-		// 				theArray[index].name = `<${messages.draft}>`;
-		// 			}
-		// 		});
-
-		// 		dispatch(receiveCategories(json));
-		// 	})
-		// 	.catch(error => {
-		// 		dispatch(receiveErrorCategories(error));
-		// 	});
 		axios
 			.get(`${baseUrl}/product_categories`)
 			.then(response => {
@@ -132,7 +118,6 @@ function shouldFetchCategories(state) {
 		return true;
 	}
 }
-
 export function fetchCategoriesIfNeeded() {
 	return (dispatch, getState) => {
 		if (shouldFetchCategories(getState())) {
@@ -144,15 +129,6 @@ export function fetchCategoriesIfNeeded() {
 function sendUpdateCategory(id, data) {
 	return dispatch => {
 		dispatch(requestUpdateCategory(id));
-		// return api.productCategories
-		// 	.update(id, data)
-		// 	.then(({ status, json }) => {
-		// 		dispatch(receiveUpdateCategory());
-		// 		dispatch(fetchCategories());
-		// 	})
-		// 	.catch(error => {
-		// 		dispatch(errorUpdateCategory(error));
-		// 	});
 		axios({
 			method: 'POST',
 			url: `${baseUrl}/product_categories/update/${id}`,
@@ -176,17 +152,6 @@ export function updateCategory(data) {
 
 export function createCategory() {
 	return (dispatch, getState) => {
-		// return api.productCategories
-		// 	.create({ enabled: false })
-		// 	.then(({ status, json }) => {
-		// 		dispatch(successCreateCategory(json.id));
-		// 		dispatch(fetchCategories());
-		// 		dispatch(selectCategory(json.id));
-		// 	})
-		// 	.catch(error => {
-		// 		//dispatch error
-		// 		console.log(error);
-		// 	});
 		axios({
 			method: 'POST',
 			url: `${baseUrl}/product_categories`,
@@ -207,20 +172,6 @@ export function deleteImage() {
 	return (dispatch, getState) => {
 		const state = getState();
 		const categoryId = state.productCategories.selectedId;
-		console.log("deleteImage");
-		// return api.productCategories
-		// 	.deleteImage(categoryId)
-		// 	.then(({ status, json }) => {
-		// 		if (status === 200) {
-		// 			dispatch(fetchCategories());
-		// 		} else {
-		// 			throw status;
-		// 		}
-		// 	})
-		// 	.catch(error => {
-		// 		//dispatch error
-		// 		console.log(error);
-		// 	});
 		axios({
 			method: 'DELETE',
 			url: `${baseUrl}/product_categories/${categoryId}/image`
@@ -237,21 +188,6 @@ export function deleteImage() {
 
 export function deleteCategory(id) {
 	return (dispatch, getState) => {
-		// return api.productCategories
-		// 	.delete(id)
-		// 	.then(({ status, json }) => {
-		// 		if (status === 200) {
-		// 			dispatch(successDeleteCategory(id));
-		// 			dispatch(deselectCategory());
-		// 			dispatch(fetchCategories());
-		// 		} else {
-		// 			throw status;
-		// 		}
-		// 	})
-		// 	.catch(error => {
-		// 		//dispatch error
-		// 		console.log(error);
-		// 	});
 		axios({
 			method: 'DELETE',
 			url: `${baseUrl}/product_categories/${id}`
@@ -314,21 +250,6 @@ function moveCategory(allCategories = [], selectedCategory, isUp = true) {
 				.catch(err => {
 					reject(err);
 				});
-			// api.productCategories
-			// 	.update(selectedCategory.id, { position: targetCategory.position })
-			// 	.then(() => {
-			// 		api.productCategories
-			// 			.update(targetCategory.id, { position: selectedCategory.position })
-			// 			.then(() => {
-			// 				resolve(newPosition);
-			// 			})
-			// 			.catch(err => {
-			// 				reject(err);
-			// 			});
-			// 	})
-			// 	.catch(err => {
-			// 		reject(err);
-			// 	});
 		}
 	});
 }
@@ -340,9 +261,7 @@ export function moveUpCategory() {
 		var selectedCategory = allCategories.find(
 			item => item.id === state.productCategories.selectedId
 		);
-
 		var isUp = true;
-
 		return moveCategory(allCategories, selectedCategory, isUp).then(
 			newPosition => {
 				dispatch(successMoveUpDownCategory(newPosition));
@@ -360,7 +279,6 @@ export function moveDownCategory() {
 			item => item.id === state.productCategories.selectedId
 		);
 		var isUp = false;
-
 		return moveCategory(allCategories, selectedCategory, isUp).then(
 			newPosition => {
 				dispatch(successMoveUpDownCategory(newPosition));
@@ -389,16 +307,6 @@ export function replaceCategory(parentId) {
 				//dispatch error
 				console.log(error);
 			});
-		// return api.productCategories
-		// 	.update(selectedCategory.id, { parent_id: parentId })
-		// 	.then(({ status, json }) => {
-		// 		dispatch(successReplaceCategory());
-		// 		dispatch(fetchCategories());
-		// 	})
-		// 	.catch(error => {
-		// 		//dispatch error
-		// 		console.log(error);
-		// 	});
 	};
 }
 
@@ -407,17 +315,7 @@ export function uploadImage(form) {
 	return (dispatch, getState) => {
 		const state = getState();
 		const categoryId = state.productCategories.selectedId;
-
 		dispatch(imageUploadStart());
-		// return api.productCategories
-		// 	.uploadImage(categoryId, form)
-		// 	.then(() => {
-		// 		dispatch(imageUploadEnd());
-		// 		dispatch(fetchCategories());
-		// 	})
-		// 	.catch(error => {
-		// 		dispatch(imageUploadEnd());
-		// 	});
 		axios({
 			method: 'POST',
 			url: `${baseUrl}/product_categories/${categoryId}/image`,

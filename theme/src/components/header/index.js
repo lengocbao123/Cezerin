@@ -114,7 +114,7 @@ export default class Header extends React.Component {
 	render() {
 		const {
 			categories,
-			cart,
+			cartItems,
 			settings,
 			currentPage,
 			location,
@@ -167,7 +167,7 @@ export default class Header extends React.Component {
 								/>
 
 								<CartIndicator
-									cart={cart}
+									cart={cartItems}
 									onClick={this.cartToggle}
 									cartIsActive={this.state.cartIsActive}
 								/>
@@ -175,7 +175,7 @@ export default class Header extends React.Component {
 									className={this.state.cartIsActive ? 'mini-cart-open' : ''}
 								>
 									<Cart
-										cart={cart}
+										cart={cartItems}
 										deleteCartItem={this.props.deleteCartItem}
 										settings={settings}
 										cartToggle={this.cartToggle}

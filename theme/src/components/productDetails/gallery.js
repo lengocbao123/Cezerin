@@ -32,19 +32,13 @@ export default class Gallery extends React.Component {
 
 		if (images && images.length > 0) {
 			const imagesArray = images.map(image => ({
-				original: helper.getThumbnailUrl(
-					image.url,
-					themeSettings.bigThumbnailWidth
-				),
-				thumbnail: helper.getThumbnailUrl(
-					image.url,
-					themeSettings.previewThumbnailWidth
-				),
+				original: image.filename,
+				thumbnail: image.filename,
 				originalAlt: image.alt,
 				thumbnailAlt: image.alt
 			}));
 
-			const originalImages = images.map(image => image.url);
+			const originalImages = images.map(image => image.filename);
 			const showThumbnails = images.length > 1;
 
 			return (

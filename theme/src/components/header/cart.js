@@ -4,17 +4,12 @@ import { themeSettings, text } from '../../lib/settings';
 import * as helper from '../../lib/helper';
 
 const CartItem = ({ item, deleteCartItem, settings }) => {
-	const thumbnail = helper.getThumbnailUrl(
-		item.image_url,
-		themeSettings.cartThumbnailWidth
-	);
-
 	return (
 		<div className="columns is-mobile">
 			<div className="column is-2">
 				<div className="image">
 					<NavLink to={item.path}>
-						<img src={thumbnail} />
+						<img src={item.images[0].filename} />
 					</NavLink>
 				</div>
 			</div>
@@ -22,7 +17,7 @@ const CartItem = ({ item, deleteCartItem, settings }) => {
 				<div>
 					<NavLink to={item.path}>{item.name}</NavLink>
 				</div>
-				{item.variant_name.length > 0 && (
+				{item.variant_name && (
 					<div className="cart-option-name">{item.variant_name}</div>
 				)}
 				<div className="cart-quantity">
@@ -48,8 +43,8 @@ export default class Cart extends React.PureComponent {
 	render() {
 		const { cart, deleteCartItem, settings, cartToggle } = this.props;
 
-		if (cart && cart.items && cart.items.length > 0) {
-			const items = cart.items.map(item => (
+		if (cart && cart.length > 0) {
+			const items = cart.map(item => (
 				<CartItem
 					key={item.id}
 					item={item}
@@ -57,7 +52,10 @@ export default class Cart extends React.PureComponent {
 					settings={settings}
 				/>
 			));
-
+			let subtotal = 0;
+			cart.map(item => {
+				subtotal = subtotal + item.price_total;
+			});
 			return (
 				<div className="mini-cart">
 					{items}
@@ -67,7 +65,7 @@ export default class Cart extends React.PureComponent {
 							<b>{text.subtotal}</b>
 						</div>
 						<div className="column is-5 has-text-right">
-							<b>{helper.formatCurrency(cart.subtotal, settings)}</b>
+							<b>{helper.formatCurrency(subtotal, settings)}</b>
 						</div>
 					</div>
 					<NavLink

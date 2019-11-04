@@ -14,7 +14,8 @@ import Price from './price';
 import Quantity from './quantity';
 import RelatedProducts from './relatedProducts';
 import Tags from './tags';
-
+import axios from 'axios';
+import { baseUrl } from '../../../../config/admin';
 const Description = ({ description }) => (
 	<div
 		className="product-content"
@@ -29,7 +30,8 @@ export default class ProductDetails extends React.Component {
 			selectedOptions: {},
 			selectedVariant: null,
 			isAllOptionsSelected: false,
-			quantity: 1
+			quantity: 1,
+			options: []
 		};
 
 		this.onOptionChange = this.onOptionChange.bind(this);
@@ -38,6 +40,7 @@ export default class ProductDetails extends React.Component {
 		);
 		this.addToCart = this.addToCart.bind(this);
 		this.checkSelectedOptions = this.checkSelectedOptions.bind(this);
+		this.getVariantItemOptionName = this.getVariantItemOptionName.bind(this);
 	}
 
 	onOptionChange(optionId, valueId) {
@@ -74,20 +77,65 @@ export default class ProductDetails extends React.Component {
 	setQuantity = quantity => {
 		this.setState({ quantity: quantity });
 	};
-
+	getVariantItemOptionName(item) {
+		let productOptions = this.props.product.options;
+		let options = [];
+		item.options.map(item => {
+			let optionName;
+			let optionValue;
+			productOptions.map(productOption => {
+				if (productOption.id === item.option_id) {
+					optionName = productOption.name;
+					productOption.values.map(value => {
+						if (value.id === item.value_id) {
+							optionValue = value.name;
+							options = [...options, { name: optionName, value: optionValue }];
+						}
+					});
+				}
+			});
+		});
+		return options;
+	}
 	addToCart() {
 		const { product, addCartItem } = this.props;
 		const { selectedVariant, quantity } = this.state;
 
-		let item = {
-			product_id: product.id,
-			quantity: quantity
-		};
+		let item;
 
 		if (selectedVariant) {
-			item.variant_id = selectedVariant.id;
+			let itemVariant;
+			product.variants.map(item => {
+				if (item.id == selectedVariant.id) {
+					itemVariant = item;
+				}
+			});
+			let options = this.getVariantItemOptionName(itemVariant);
+			let variant_name = [];
+			options.map(option => {
+				variant_name.push(`${option.name}: ${option.value}`);
+			});
+			item = {
+				id: new Date().getTime(),
+				product_id: product.id,
+				quantity: quantity,
+				sku: itemVariant.sku,
+				variant_id: selectedVariant.id,
+				variant_name: variant_name.join(', '),
+				variantStockQuantity: itemVariant.stock_quantity
+			};
+		} else {
+			item = {
+				id: new Date().getTime(),
+				product_id: product.id,
+				sku: product.sku,
+				quantity: quantity,
+				variantStockQuantity: 0,
+				productStockQuantity: product.stock_quantity,
+				variant_id: null,
+				variant_name: null
+			};
 		}
-
 		addCartItem(item);
 	}
 

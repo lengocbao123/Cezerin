@@ -6,12 +6,15 @@ import CheckoutSuccess from '../components/checkoutSuccess';
 
 const CheckoutSuccessContainer = props => {
 	const {
-		state: { pageDetails, order, settings, shippingMethods, checkoutFields }
+		state: {
+			pageDetails,
+			order,
+			settings,
+			shippingMethods,
+			paymentMethods,
+			checkoutFields
+		}
 	} = props;
-	const shippingMethod = helper.getShippingMethodFromOrder(
-		order,
-		shippingMethods
-	);
 
 	return (
 		<Fragment>
@@ -32,7 +35,8 @@ const CheckoutSuccessContainer = props => {
 									order={order}
 									settings={settings}
 									pageDetails={pageDetails}
-									shippingMethod={shippingMethod}
+									shippingMethods={shippingMethods}
+									paymentMethods={paymentMethods}
 									checkoutFields={checkoutFields}
 								/>
 							</div>

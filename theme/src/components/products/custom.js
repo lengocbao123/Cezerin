@@ -2,7 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import api from '../../lib/api';
 import ProductList from '../productList';
-
+import axios from 'axios';
+import { baseUrl } from '../../../../config/admin';
 export default class CustomProducts extends React.Component {
 	static propTypes = {
 		ids: PropTypes.oneOfType([
@@ -103,17 +104,24 @@ export default class CustomProducts extends React.Component {
 				filter[`attributes.${attr.name}`] = attr.value;
 			});
 		}
-
-		api.ajax.products
-			.list(filter)
-			.then(({ json }) => {
-				if (!this.isCancelled) {
-					this.setState({
-						products: json.data
-					});
-				}
+		axios
+			.get(`${baseUrl}/products`, filter)
+			.then(response => {
+				this.setState({
+					products: response.data.data
+				});
 			})
 			.catch(() => {});
+		// api.ajax.products
+		// 	.list(filter)
+		// 	.then(({ json }) => {
+		// 		if (!this.isCancelled) {
+		// 			this.setState({
+		// 				products: json.data
+		// 			});
+		// 		}
+		// 	})
+		// 	.catch(() => {});
 	};
 
 	render() {

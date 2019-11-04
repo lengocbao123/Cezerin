@@ -1,5 +1,7 @@
 import api from './api';
 import queryString from 'query-string';
+import axios from 'axios';
+import { baseUrl } from '../../../config/admin';
 import {
 	getParsedProductFilter,
 	getProductFilterForCategory,
@@ -41,7 +43,12 @@ const getProducts = (currentPage, productFilter) => {
 	if (currentPage.type === PRODUCT_CATEGORY || currentPage.type === SEARCH) {
 		let filter = getParsedProductFilter(productFilter);
 		filter.enabled = true;
-		return api.products.list(filter).then(({ status, json }) => json);
+		// return api.products.list(filter).then(({ status, json }) => json);
+		return axios({
+			method: 'GET',
+			url: `${baseUrl}/products`,
+			data: filter
+		}).then(response => response.data);
 	} else {
 		return null;
 	}
@@ -49,9 +56,13 @@ const getProducts = (currentPage, productFilter) => {
 
 const getProduct = currentPage => {
 	if (currentPage.type === PRODUCT) {
-		return api.products
-			.retrieve(currentPage.resource)
-			.then(({ status, json }) => json);
+		// return api.products
+		// 	.retrieve(currentPage.resource)
+		// 	.then(({ status, json }) => json);
+		return axios({
+			method: 'GET',
+			url: `${baseUrl}/products/${currentPage.resource}`
+		}).then(response => response.data);
 	} else {
 		return {};
 	}
@@ -75,11 +86,19 @@ const getThemeSettings = () => {
 };
 
 const getAllData = (currentPage, productFilter, cookie) => {
+	let cartItems = [];
 	return Promise.all([
 		api.checkoutFields.list().then(({ status, json }) => json),
-		api.productCategories
-			.list({ enabled: true, fields: CATEGORIES_FIELDS })
-			.then(({ status, json }) => json),
+		axios({
+			method: 'GET',
+			url: `${baseUrl}/product_categories`,
+			data: {
+				enabled: true,
+				fields: CATEGORIES_FIELDS
+			}
+		}).then(response => {
+			return response.data;
+		}),
 		api.ajax.cart.retrieve(cookie).then(({ status, json }) => json),
 		getProducts(currentPage, productFilter),
 		getProduct(currentPage),
@@ -103,6 +122,7 @@ const getAllData = (currentPage, productFilter, cookie) => {
 				checkoutFields,
 				categories,
 				cart,
+				cartItems,
 				products,
 				product,
 				page,
@@ -118,6 +138,7 @@ const getState = (currentPage, settings, allData, location, productFilter) => {
 		checkoutFields,
 		categories,
 		cart,
+		cartItems,
 		products,
 		product,
 		page,
@@ -182,6 +203,7 @@ const getState = (currentPage, settings, allData, location, productFilter) => {
 						: 30
 			},
 			cart: cart,
+			cartItems: cartItems,
 			order: null,
 			checkoutFields: checkoutFields,
 			themeSettings: themeSettings

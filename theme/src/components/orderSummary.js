@@ -5,26 +5,6 @@ import { themeSettings, text } from '../lib/settings';
 import * as helper from '../lib/helper';
 
 const SummaryItem = ({ settings, item, updateCartItemQuantiry }) => {
-	const thumbnail = helper.getThumbnailUrl(
-		item.image_url,
-		themeSettings.cartThumbnailWidth
-	);
-	const qtyOptions = [];
-	const maxQty = item.stock_backorder
-		? themeSettings.maxCartItemQty
-		: item.stock_quantity >= themeSettings.maxCartItemQty
-			? themeSettings.maxCartItemQty
-			: item.stock_quantity;
-
-	for (let i = 0; i <= maxQty; i++) {
-		const optionText = i === 0 ? text.remove : i;
-		qtyOptions.push(
-			<option key={i} value={i}>
-				{optionText}
-			</option>
-		);
-	}
-
 	return (
 		<div className="columns is-mobile">
 			<div className="column is-3">
@@ -32,7 +12,7 @@ const SummaryItem = ({ settings, item, updateCartItemQuantiry }) => {
 					<NavLink to={item.path}>
 						<img
 							className="product-image"
-							src={thumbnail}
+							src={item.images[0].filename}
 							alt={item.name}
 							title={item.name}
 						/>
@@ -43,20 +23,14 @@ const SummaryItem = ({ settings, item, updateCartItemQuantiry }) => {
 				<div>
 					<NavLink to={item.path}>{item.name}</NavLink>
 				</div>
-				{item.variant_name.length > 0 && (
+				{!item.variant_name ? (
+					''
+				) : (
 					<div className="cart-option-name">{item.variant_name}</div>
 				)}
 				<div className="qty">
-					<span>{text.qty}:</span>
-					<span className="select is-small">
-						<select
-							onChange={e => {
-								updateCartItemQuantiry(item.id, e.target.value);
-							}}
-							value={item.quantity}
-						>
-							{qtyOptions}
-						</select>
+					<span>
+						{text.qty}: {item.quantity}
 					</span>
 				</div>
 			</div>
@@ -76,18 +50,21 @@ SummaryItem.propTypes = {
 const OrderSummary = props => {
 	const {
 		updateCartItemQuantiry,
-		state: { cart, settings }
+		state: { cart, settings, cartItems }
 	} = props;
-
-	if (cart && cart.items && cart.items.length > 0) {
-		const items = cart.items.map(item => (
-			<SummaryItem
-				key={item.id}
-				item={item}
-				updateCartItemQuantiry={updateCartItemQuantiry}
-				settings={settings}
-			/>
-		));
+	let grand_total = 0;
+	if (props.state.cartItems) {
+		const items = cartItems.map(item => {
+			grand_total = grand_total + item.price_total;
+			return (
+				<SummaryItem
+					key={item.id}
+					item={item}
+					updateCartItemQuantiry={updateCartItemQuantiry}
+					settings={settings}
+				/>
+			);
+		});
 
 		return (
 			<div
@@ -98,30 +75,9 @@ const OrderSummary = props => {
 				<hr className="separator" />
 				{items}
 				<div className="columns is-mobile is-gapless is-multiline summary-block">
-					<div className="column is-7">{text.subtotal}</div>
-					<div className="column is-5 has-text-right price">
-						{helper.formatCurrency(cart.subtotal, settings)}
-					</div>
-					<div className="column is-7">{text.shipping}</div>
-					<div className="column is-5 has-text-right price">
-						{helper.formatCurrency(cart.shipping_total, settings)}
-					</div>
-
-					{cart.discount_total > 0 && (
-						<div className="column is-7">{text.discount}</div>
-					)}
-					{cart.discount_total > 0 && (
-						<div className="column is-5 has-text-right price">
-							{helper.formatCurrency(cart.discount_total, settings)}
-						</div>
-					)}
-
-					<div className="column is-12">
-						<hr className="separator" />
-					</div>
 					<div className="column is-6 total-text">{text.grandTotal}</div>
 					<div className="column is-6 total-price">
-						{helper.formatCurrency(cart.grand_total, settings)}
+						{helper.formatCurrency(grand_total, settings)}
 					</div>
 				</div>
 			</div>

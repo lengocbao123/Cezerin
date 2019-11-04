@@ -4,7 +4,8 @@ import queryString from 'query-string';
 import { animateScroll } from 'react-scroll';
 import api from '../client/api';
 import * as analytics from './analytics';
-
+import axios from 'axios';
+import { baseUrl } from '../../../config/admin';
 const requestProduct = () => ({ type: t.PRODUCT_REQUEST });
 
 const receiveProduct = product => ({ type: t.PRODUCT_RECEIVE, product });
@@ -13,10 +14,10 @@ export const fetchProducts = () => async (dispatch, getState) => {
 	dispatch(requestProducts());
 	const { app } = getState();
 	const filter = getParsedProductFilter(app.productFilter);
-	const response = await api.ajax.products.list(filter);
-	const products = response.json;
-	dispatch(receiveProducts(null));
-	dispatch(receiveProducts(products));
+	axios.get(`${baseUrl}/products`, filter).then(response => {
+		dispatch(receiveProducts(null));
+		dispatch(receiveProducts(response.data));
+	});
 };
 
 export const getProductFilterForCategory = (locationSearch, sortBy) => {
@@ -119,18 +120,59 @@ const requestCart = () => ({ type: t.CART_REQUEST });
 const receiveCart = cart => ({ type: t.CART_RECEIVE, cart });
 
 export const addCartItem = item => async (dispatch, getState) => {
-	dispatch(requestAddCartItem());
-	const response = await api.ajax.cart.addItem(item);
-	const cart = response.json;
-	dispatch(receiveCart(cart));
-	analytics.addCartItem({
-		item: item,
-		cart: cart
+	let { app } = getState();
+	let { cartItems } = app;
+	let index = cartItems.findIndex(cartItem => {
+		return (
+			cartItem.product_id === item.product_id &&
+			cartItem.variant_id === item.variant_id &&
+			cartItem.variant_id &&
+			item.variant_id
+		);
 	});
+
+	await axios
+		.get(`${baseUrl}/products`, {
+			params: {
+				ids: item.product_id,
+				limit: 1,
+				fields: 'sku,name,weight,price,images,path,stock_quantity'
+			}
+		})
+		.then(async response => {
+			let result = response.data.data[0];
+			if (index == -1) {
+				result.id = item.id;
+				result.product_id = item.product_id;
+				result.price_total = result.price * item.quantity;
+				result.quantity = item.quantity;
+				result.variant_id = item.variant_id;
+				result.variant_name = item.variant_name;
+				result.sku = item.sku;
+				result.variantStockQuantity = item.variantStockQuantity;
+				await dispatch(addItemInCart(result));
+			} else {
+				let existItem = cartItems[index];
+				(result.id = item.id), (result.product_id = item.product_id);
+				result.price_total =
+					result.price * (item.quantity + existItem.quantity);
+				result.quantity = item.quantity + existItem.quantity;
+				result.variant_id = item.variant_id;
+				result.variant_name = item.variant_name;
+				result.sku = item.sku;
+				result.variantStockQuantity = item.variantStockQuantity;
+				await dispatch(deleteItemFromCart(existItem.id));
+				await dispatch(addItemInCart(result));
+			}
+		});
 };
 
-const requestAddCartItem = () => ({ type: t.CART_ITEM_ADD_REQUEST });
-
+const addItemInCart = item => ({ type: t.ADD_ITEM_IN_CART, item });
+const updateItemInCart = (item, index) => ({
+	type: t.UPDATE_ITEM_IN_CART,
+	item,
+	index
+});
 export const updateCartItemQuantiry = (item_id, quantity) => async (
 	dispatch,
 	getState
@@ -148,17 +190,12 @@ const requestUpdateCartItemQuantiry = () => ({
 });
 
 export const deleteCartItem = item_id => async (dispatch, getState) => {
-	dispatch(requestDeleteCartItem());
-	const { app } = getState();
-	const response = await api.ajax.cart.deleteItem(item_id);
-	dispatch(receiveCart(response.json));
-	dispatch(fetchShippingMethods());
-	analytics.deleteCartItem({
-		itemId: item_id,
-		cart: app.cart
-	});
+	dispatch(deleteItemFromCart(item_id));
 };
-
+const deleteItemFromCart = item_id => ({
+	type: t.DELETE_ITEM_FROM_CART,
+	item_id
+});
 const requestDeleteCartItem = () => ({ type: t.CART_ITEM_DELETE_REQUEST });
 
 export const fetchPaymentMethods = () => async (dispatch, getState) => {
@@ -187,36 +224,87 @@ const receiveShippingMethods = methods => ({
 	methods
 });
 
-export const checkout = (cart, history) => async (dispatch, getState) => {
-	dispatch(requestCheckout());
-	if (cart) {
-		await api.ajax.cart.update({
-			shipping_address: cart.shipping_address,
-			billing_address: cart.billing_address,
-			email: cart.email,
-			mobile: cart.mobile,
-			payment_method_id: cart.payment_method_id,
-			shipping_method_id: cart.shipping_method_id,
-			comments: cart.comments
-		});
-	}
+export const checkout = (data, history) => async (dispatch, getState) => {
+	let orderItems = [];
+	data.item.map(item => {
+		let tempItem = {
+			itemName: item.name,
+			itemType: 'productType',
+			productId: item.product_id,
+			itemPrice: item.price,
+			itemCode: item.id,
+			itemImage: item.images[0].filename,
+			itemSku: item.sku,
+			itemPath: item.path,
+			itemDetail: item.variant_name,
+			quantity: item.quantity
+		};
 
-	const cartResponse = await api.ajax.cart.retrieve();
-	const chargeNeeded = !!cartResponse.json.payment_token;
-
-	if (chargeNeeded) {
-		const chargeResponse = await api.ajax.cart.client.post('/cart/charge');
-		const chargeSucceeded = chargeResponse.status === 200;
-		if (!chargeSucceeded) {
-			return;
-		}
-	}
-
-	const response = await api.ajax.cart.checkout();
-	const order = response.json;
+		dispatch(deleteItemFromCart(item.id));
+		orderItems = [...orderItems, tempItem];
+		axios({
+			method: 'POST',
+			url: `${baseUrl}/products/${item.product_id}`,
+			data: { stock_quantity: item.stock_quantity - item.quantity }
+		})
+			.then(response => {
+				console.log(response.data);
+			})
+			.catch(error => {
+				console.log(error);
+			});
+		console.log('item.variantStockQuantity', item.variantStockQuantity);
+		axios({
+			method: 'POST',
+			url: `${baseUrl}/products/${item.product_id}/variants/${item.variant_id}`,
+			data: {
+				stock_quantity: item.variantStockQuantity - item.quantity
+			}
+		})
+			.then(response => {
+				console.log(response.data);
+			})
+			.catch(error => {
+				console.log(error);
+			});
+	});
+	let order = {
+		orderCode: new Date().getTime(),
+		customerName: data.customerName,
+		customerMobile: data.customerMobile,
+		branchCode: 'abfcded0-bbbb-4dcc-af4d-504491f2e6da',
+		serviceName: 'Kim Spa',
+		countryCode: '+84',
+		serviceCode: ' 079114cd-9297-4326-ae54-178a15f36d63',
+		branchName: 'Kim Spa',
+		employeeName: '',
+		item: orderItems,
+		billingAddress: data.billingAddress,
+		shippingAddress: data.shippingAddress,
+		shippingMethodId: data.shippingMethodId,
+		paymentMethodId: data.paymentMethodId,
+		customerComment: data.customerComment,
+		shippingMethod: data.shippingMethod.name,
+		shippingFee: data.shippingMethod.price,
+		paymentMethod: data.paymentMethod.name
+	};
 	dispatch(receiveCheckout(order));
 	history.push('/checkout-success');
-	analytics.checkoutSuccess({ order: order });
+	axios({
+		method: 'POST',
+		url: 'http://192.168.0.34:3000/internal/api/secure/orders/createOrders',
+		data: order,
+		headers: {
+			APIKey:
+				'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjowLjc5NTAyOTg3ODE3MDIzMDcsImlhdCI6MTU3MjMxODgxNSwiZXhwIjoxNjU4NzE4ODE1fQ.UojZGJgX0WbR0SRYMU1Z0SKuAHwlbaVJiW5l1A6ZZ40',
+			Authorization:
+				'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjoie1widXNlckNvZGVcIjpcIjUzN2E3NzQxLWJmMTktNDFlNC1iZmU1LTQ3NTQ2MDE1NDY3NFwiLFwic29jaWFsSWRcIjpudWxsLFwic29jaWFsVHlwZVwiOlwic3lzdGVtXCIsXCJ0eXBlQWNjb3VudFwiOm51bGwsXCJ1c2VybmFtZVwiOlwiOTMyODc5ODEzXCIsXCJmaXJzdE5hbWVcIjpcIk5nYVwiLFwibGFzdE5hbWVcIjpcIkh1eW5oXCIsXCJlbWFpbFwiOlwibmdhMTgxMDk2QGdtYWlsLmNvbVwiLFwiYWRkcmVzc1wiOlwiYWRkIGhpaFwiLFwiY291bnRyeUNvZGVcIjpcIis4NFwiLFwiZG9iXCI6XCIyMDE5LTA1LTA3XCIsXCJpc05vdGlmaWNhdGlvblwiOjEsXCJhY3RpdmVcIjowLFwiZ29vZ2xlVXJsXCI6bnVsbCxcImZhY2Vib29rVXJsXCI6bnVsbCxcInVpZEZpcmVCYXNlXCI6bnVsbCxcIm1vYmlsZVwiOlwiMDkzMjg3OTgxMzRcIixcInNleFwiOjEsXCJuaWNrTmFtZVwiOm51bGwsXCJhdmF0YXJJbWFnZVwiOlwiaHR0cHM6Ly9zdG9yYWdlLmdvb2dsZWFwaXMuY29tL21hc3NwYS1kZXYuYXBwc3BvdC5jb20vYXZhdGFyLzUzN2E3NzQxLWJmMTktNDFlNC1iZmU1LTQ3NTQ2MDE1NDY3NC81MzdhNzc0MS1iZjE5LTQxZTQtYmZlNS00NzU0NjAxNTQ2NzRfMTU2Mzg2MDYyNDk1MC5qcGdcIixcImxvZ2luVGltZVwiOjE1NzIyNTgyMDIyNTIsXCJjcmVhdGVkQXRcIjoxNTU4MzYxMDM4OTUxLFwidXBkYXRlZEF0XCI6MTU3MjIzMDI5NTEwOCxcInJvbGVJZFwiOntcImxvZ2luRnJvbnRlbmRcIjoxLFwibG9naW5BZG1pblwiOjEsXCJyb2xlc1wiOlt7XCJyb2xlXCI6XCJvd25lclNwYVwiLFwic3BhQ29kZVwiOlwiMDc5MTE0Y2QtOTI5Ny00MzI2LWFlNTQtMTc4YTE1ZjM2ZDYzXCJ9XSxcInJvbGVcIjpcIm93bmVyU3BhXCIsXCJzcGFDb2RlXCI6XCIwNzkxMTRjZC05Mjk3LTQzMjYtYWU1NC0xNzhhMTVmMzZkNjNcIixcInNwYU5hbWVcIjpcIktpbSBTcGFcIixcImJyYW5jaENvZGVcIjpcImFiZmNkZWQwLWJiYmItNGRjYy1hZjRkLTUwNDQ5MWYyZTZkYVwiLFwiYnJhbmNoTmFtZVwiOlwiS2ltIFNwYVwifX0iLCJpYXQiOjE1NzIzMTc5MzIsImV4cCI6MTU3MjkyMjczMn0.jfynZYeosjGH4mbeeeB9HStx-Cy6t2-HsIkhgGVQCr0'
+		}
+	})
+		.then(response => {
+			history.push('/checkout-success');
+		})
+		.catch(error => console.log(error));
 };
 
 const requestCheckout = () => ({ type: t.CHECKOUT_REQUEST });

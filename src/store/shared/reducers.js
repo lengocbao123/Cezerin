@@ -2,7 +2,9 @@ import { combineReducers } from 'redux';
 import { reducer as formReducer } from 'redux-form';
 import * as t from './actionTypes';
 
-const initialState = {};
+const initialState = {
+	// cartItems: []
+};
 
 const appReducer = (state = initialState, action) => {
 	switch (action.type) {
@@ -45,7 +47,22 @@ const appReducer = (state = initialState, action) => {
 
 		case t.CART_RECEIVE:
 			return Object.assign({}, state, { cart: action.cart });
-
+		case t.ADD_ITEM_IN_CART:
+			return Object.assign({}, state, {
+				cartItems: [...state.cartItems, action.item]
+			});
+		case t.UPDATE_ITEM_IN_CART:
+			let updateItem = state.cartItems[action.index];
+			updateItem.quantity = updateItem.quantity + action.item.quantity;
+			return Object.assign({}, state, {
+				cartItems: [...state.cartItems, updateItem]
+			});
+		case t.DELETE_ITEM_FROM_CART:
+			return Object.assign({}, state, {
+				cartItems: state.cartItems.filter(item => {
+					return item.id !== action.item_id;
+				})
+			});
 		case t.SHIPPING_METHODS_REQUEST:
 			return Object.assign({}, state, { loadingShippingMethods: true });
 
@@ -96,7 +113,8 @@ const appReducer = (state = initialState, action) => {
 		case t.CART_ITEM_UPDATE_REQUEST:
 		case t.SITEMAP_REQUEST:
 		default:
-			return state;
+			return Object.assign({}, state, initialState);
+		// return state;
 	}
 };
 

@@ -3,9 +3,9 @@ import { NavLink } from 'react-router-dom';
 import { themeSettings, text } from '../../lib/settings';
 
 const CartCount = ({ cart }) => {
-	if (cart && cart.items && cart.items.length > 0) {
-		const itemsCount = cart.items.reduce((a, b) => a + b.quantity, 0);
-		return <span className="cart-count">{itemsCount}</span>;
+	if (cart.length > 0) {
+		const itemsCount = cart.reduce((a, b) => a + b.quantity, 0);
+		return <span className="cart-count">{cart.length}</span>;
 	}
 	return null;
 };

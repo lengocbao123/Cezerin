@@ -38,6 +38,7 @@ export default (state = initialState, action) => {
 				loadingItems: true
 			});
 		case t.ORDERS_RECEIVE:
+			console.log(action.data);
 			return Object.assign({}, state, {
 				loadingItems: false,
 				hasMore: action.has_more,

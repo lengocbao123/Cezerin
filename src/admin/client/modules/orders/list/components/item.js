@@ -8,7 +8,8 @@ import messages from 'lib/text';
 import * as helper from 'lib/helper';
 import style from './style.css';
 import moment from 'moment';
-
+import axios from 'axios';
+import { baseUrl } from '../../../../../../../config/admin';
 const getOrderStateIcons = order => {
 	let icons = [];
 
@@ -95,14 +96,12 @@ const getOrderStateIcons = order => {
 
 const OrdersListItem = ({ order, onSelect, selected, settings }) => {
 	const checked = selected.includes(order.id);
-	let grandTotalFormatted = helper.formatCurrency(order.grand_total, settings);
+	let grandTotalFormatted = helper.formatCurrency(order.totalPrice, settings);
 
 	const stateIcons = getOrderStateIcons(order);
-	const dateCreated = moment(order.date_placed || order.date_created);
+	const dateCreated = moment(order.createdAt);
 	const dateCreatedFromNow = dateCreated.format(`${settings.date_format}`);
-	let shippingTo = order.shipping_address
-		? order.shipping_address.full_name
-		: '';
+	let shippingTo = order.shippingAddress ? order.shippingAddress.fullName : '';
 
 	return (
 		<div className={'orders-item' + (checked === true ? ' selected' : '')}>
@@ -120,14 +119,17 @@ const OrdersListItem = ({ order, onSelect, selected, settings }) => {
 						</div>
 						<div className="col-xs-1">{stateIcons}</div>
 						<div className="col-xs-2">
-							<Link to={`/admin/order/${order.id}`} className={style.number}>
-								{order.number || 0}
+							<Link to={`/admin/order/${order._id}`} className={style.number}>
+								{order.orderCode || 0}
 							</Link>
 							<br />
 							<small className={style.small}>{dateCreatedFromNow}</small>
 						</div>
 						<div className="col-xs-4">
 							<div className={style.shipping}>{shippingTo}</div>
+							<div className={style.shipping}>
+								{order.shippingAddress.address}
+							</div>
 							<small className={style.small}>{order.shipping_method}</small>
 						</div>
 						<div className={'col-xs-2 ' + style.price}>
