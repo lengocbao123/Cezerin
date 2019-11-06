@@ -19,23 +19,9 @@ const getShippingFieldLabel = ({ label, key }) => {
 };
 
 const ShippingFields = ({ order, shippingMethod }) => {
-	let rows = null;
-	if (
-		shippingMethod &&
-		shippingMethod.fields &&
-		shippingMethod.fields.length > 0
-	) {
-		rows = shippingMethod.fields.map((field, index) => {
-			const fieldLabel = getShippingFieldLabel(field);
-			const fieldValue = order.shipping_address[field.key];
-
-			return (
-				<ShippingFieldDiv key={index} label={fieldLabel} value={fieldValue} />
-			);
-		});
-	}
-
-	return <div>{rows}</div>;
+	return (
+		<ShippingFieldDiv label={messages.shippingMethod} value={shippingMethod} />
+	);
 };
 
 const ShippingFieldDiv = ({ label, value }) => (
@@ -46,40 +32,22 @@ const ShippingFieldDiv = ({ label, value }) => (
 );
 
 const ShippingAddress = ({ order, settings }) => {
-	const address = order.shipping_address;
-	const shippingMethod = order.shipping_method_details;
+	const address = order.shippingAddress;
+	const shippingMethod = order.shippingMethod;
 
 	return (
 		<div className={style.address} style={{ marginBottom: 20 }}>
 			<ShippingFields order={order} shippingMethod={shippingMethod} />
 			<div>
-				<label>{messages.city}: </label>
-				{address.city}
-				{address.state && address.state.length > 0 ? ', ' + address.state : ''}
-				{address.postal_code && address.postal_code.length > 0
-					? ', ' + address.postal_code
-					: ''}
-			</div>
-			<div>
-				<label>{messages.country}: </label>
-				{address.country}
+				<label>{messages.address}: </label>
+				{address.address}
 			</div>
 		</div>
 	);
 };
 
 const BillingAddress = ({ address, settings }) => {
-	const billinsAddressIsEmpty =
-		address.address1 === '' &&
-		address.address2 === '' &&
-		address.city === '' &&
-		address.company === '' &&
-		address.country === '' &&
-		address.full_name === '' &&
-		address.phone === '' &&
-		address.state === '' &&
-		address.tax_number === '' &&
-		address.postal_code === '';
+	const billinsAddressIsEmpty = address.address === '';
 
 	if (billinsAddressIsEmpty && settings.hide_billing_address) {
 		return null;
@@ -117,19 +85,10 @@ const BillingAddress = ({ address, settings }) => {
 					{messages.billingAddress}
 				</div>
 				<div className={style.address}>
-					<div>{address.full_name}</div>
-					<div>{address.company}</div>
-					<div>{address.address1}</div>
-					<div>{address.address2}</div>
-					<div>
-						{address.city},{' '}
-						{address.state && address.state.length > 0
-							? address.state + ', '
-							: ''}
-						{address.postal_code}
-					</div>
-					<div>{address.country}</div>
+					<div>{address.fullName}</div>
+					<div>{address.address}</div>
 					<div>{address.phone}</div>
+					<div>{address.company}</div>
 				</div>
 			</div>
 		);
@@ -161,9 +120,9 @@ export default class OrderCustomer extends React.Component {
 		const { order, settings } = this.props;
 
 		const allowEdit = order.closed === false && order.cancelled === false;
-		let mapAddress = `${order.shipping_address.address1} ${
-			order.shipping_address.city
-		} ${order.shipping_address.state} ${order.shipping_address.postal_code}`;
+		let mapAddress = order.shippingAddress
+			? `${order.shippingAddress.address}`
+			: '';
 		mapAddress = mapAddress.replace(/ /g, '+');
 		const mapUrl = `https://www.google.com/maps/place/${mapAddress}`;
 
@@ -177,18 +136,18 @@ export default class OrderCustomer extends React.Component {
 						<div className={style.address}>
 							<div>
 								<Link
-									to={`/admin/customer/${order.customer_id}`}
+									to={`/admin/customer/${order._id}`}
 									className={style.link}
 								>
-									{order.customer && order.customer.full_name}
+									{order.customerName}
 								</Link>
 							</div>
-							<div>
+							{/* <div>
 								<a href={'MailTo:' + order.email} className={style.link}>
 									{order.email}
 								</a>
-							</div>
-							<div>{order.mobile}</div>
+							</div> */}
+							<div>{`(${order.countryCode})${order.customerMobile}`}</div>
 						</div>
 
 						<Divider
@@ -203,7 +162,11 @@ export default class OrderCustomer extends React.Component {
 						<div style={{ paddingBottom: 16, paddingTop: 0 }}>
 							{messages.shippingAddress}
 						</div>
-						<ShippingAddress order={order} settings={settings} />
+						{order.shippingAddress ? (
+							<ShippingAddress order={order} settings={settings} />
+						) : (
+							''
+						)}
 
 						{allowEdit && (
 							<RaisedButton
@@ -212,30 +175,40 @@ export default class OrderCustomer extends React.Component {
 								onClick={this.showShippingEdit}
 							/>
 						)}
-						<a href={mapUrl} target="_blank">
-							<FlatButton label="View map" />
-						</a>
-
-						<BillingAddress
-							address={order.billing_address}
-							settings={settings}
-						/>
-
-						<Dialog
-							title={messages.shippingAddress}
-							modal={false}
-							open={this.state.openShippingEdit}
-							onRequestClose={this.hideShippingEdit}
-							autoScrollBodyContent={true}
-							contentStyle={{ width: 600 }}
-						>
-							<ShippingAddressForm
-								initialValues={order.shipping_address}
-								onCancel={this.hideShippingEdit}
-								onSubmit={this.saveShippingEdit}
-								shippingMethod={order.shipping_method_details}
+						{order.billingAddress ? (
+							<a href={mapUrl} target="_blank">
+								<FlatButton label="View map" />
+							</a>
+						) : (
+							''
+						)}
+						{order.billingAddress ? (
+							<BillingAddress
+								address={order.billingAddress}
+								settings={settings}
 							/>
-						</Dialog>
+						) : (
+							''
+						)}
+						{order.shippingAddress ? (
+							<Dialog
+								title={messages.shippingAddress}
+								modal={false}
+								open={this.state.openShippingEdit}
+								onRequestClose={this.hideShippingEdit}
+								autoScrollBodyContent={true}
+								contentStyle={{ width: 600 }}
+							>
+								<ShippingAddressForm
+									initialValues={order.shippingAddress}
+									onCancel={this.hideShippingEdit}
+									onSubmit={this.saveShippingEdit}
+									shippingMethod={order.shipping_method_details}
+								/>
+							</Dialog>
+						) : (
+							''
+						)}
 					</div>
 				</Paper>
 			</div>

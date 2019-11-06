@@ -6,6 +6,7 @@ import api from '../client/api';
 import * as analytics from './analytics';
 import axios from 'axios';
 import { baseUrl } from '../../../config/admin';
+import { APIKey, Authorization } from '../../../config/masspa';
 const requestProduct = () => ({ type: t.PRODUCT_REQUEST });
 
 const receiveProduct = product => ({ type: t.PRODUCT_RECEIVE, product });
@@ -292,13 +293,11 @@ export const checkout = (data, history) => async (dispatch, getState) => {
 	history.push('/checkout-success');
 	axios({
 		method: 'POST',
-		url: 'http://192.168.0.34:3000/internal/api/secure/orders/createOrders',
+		url: 'https://dev-api.masspa.vn/internal/api/secure/orders/createOrders',
 		data: order,
 		headers: {
-			APIKey:
-				'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjowLjc5NTAyOTg3ODE3MDIzMDcsImlhdCI6MTU3MjMxODgxNSwiZXhwIjoxNjU4NzE4ODE1fQ.UojZGJgX0WbR0SRYMU1Z0SKuAHwlbaVJiW5l1A6ZZ40',
-			Authorization:
-				'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjoie1widXNlckNvZGVcIjpcIjUzN2E3NzQxLWJmMTktNDFlNC1iZmU1LTQ3NTQ2MDE1NDY3NFwiLFwic29jaWFsSWRcIjpudWxsLFwic29jaWFsVHlwZVwiOlwic3lzdGVtXCIsXCJ0eXBlQWNjb3VudFwiOm51bGwsXCJ1c2VybmFtZVwiOlwiOTMyODc5ODEzXCIsXCJmaXJzdE5hbWVcIjpcIk5nYVwiLFwibGFzdE5hbWVcIjpcIkh1eW5oXCIsXCJlbWFpbFwiOlwibmdhMTgxMDk2QGdtYWlsLmNvbVwiLFwiYWRkcmVzc1wiOlwiYWRkIGhpaFwiLFwiY291bnRyeUNvZGVcIjpcIis4NFwiLFwiZG9iXCI6XCIyMDE5LTA1LTA3XCIsXCJpc05vdGlmaWNhdGlvblwiOjEsXCJhY3RpdmVcIjowLFwiZ29vZ2xlVXJsXCI6bnVsbCxcImZhY2Vib29rVXJsXCI6bnVsbCxcInVpZEZpcmVCYXNlXCI6bnVsbCxcIm1vYmlsZVwiOlwiMDkzMjg3OTgxMzRcIixcInNleFwiOjEsXCJuaWNrTmFtZVwiOm51bGwsXCJhdmF0YXJJbWFnZVwiOlwiaHR0cHM6Ly9zdG9yYWdlLmdvb2dsZWFwaXMuY29tL21hc3NwYS1kZXYuYXBwc3BvdC5jb20vYXZhdGFyLzUzN2E3NzQxLWJmMTktNDFlNC1iZmU1LTQ3NTQ2MDE1NDY3NC81MzdhNzc0MS1iZjE5LTQxZTQtYmZlNS00NzU0NjAxNTQ2NzRfMTU2Mzg2MDYyNDk1MC5qcGdcIixcImxvZ2luVGltZVwiOjE1NzIyNTgyMDIyNTIsXCJjcmVhdGVkQXRcIjoxNTU4MzYxMDM4OTUxLFwidXBkYXRlZEF0XCI6MTU3MjIzMDI5NTEwOCxcInJvbGVJZFwiOntcImxvZ2luRnJvbnRlbmRcIjoxLFwibG9naW5BZG1pblwiOjEsXCJyb2xlc1wiOlt7XCJyb2xlXCI6XCJvd25lclNwYVwiLFwic3BhQ29kZVwiOlwiMDc5MTE0Y2QtOTI5Ny00MzI2LWFlNTQtMTc4YTE1ZjM2ZDYzXCJ9XSxcInJvbGVcIjpcIm93bmVyU3BhXCIsXCJzcGFDb2RlXCI6XCIwNzkxMTRjZC05Mjk3LTQzMjYtYWU1NC0xNzhhMTVmMzZkNjNcIixcInNwYU5hbWVcIjpcIktpbSBTcGFcIixcImJyYW5jaENvZGVcIjpcImFiZmNkZWQwLWJiYmItNGRjYy1hZjRkLTUwNDQ5MWYyZTZkYVwiLFwiYnJhbmNoTmFtZVwiOlwiS2ltIFNwYVwifX0iLCJpYXQiOjE1NzIzMTc5MzIsImV4cCI6MTU3MjkyMjczMn0.jfynZYeosjGH4mbeeeB9HStx-Cy6t2-HsIkhgGVQCr0'
+			APIKey: APIKey,
+			Authorization: Authorization
 		}
 	})
 		.then(response => {

@@ -7,6 +7,7 @@ import FontIcon from 'material-ui/FontIcon';
 import messages from 'lib/text';
 import * as helper from 'lib/helper';
 import style from './style.css';
+import './style.css';
 import moment from 'moment';
 import axios from 'axios';
 import { baseUrl } from '../../../../../../../config/admin';
@@ -119,7 +120,10 @@ const OrdersListItem = ({ order, onSelect, selected, settings }) => {
 						</div>
 						<div className="col-xs-1">{stateIcons}</div>
 						<div className="col-xs-2">
-							<Link to={`/admin/order/${order._id}`} className={style.number}>
+							<Link
+								to={`/admin/order/${order.orderCode}`}
+								className={style.number}
+							>
 								{order.orderCode || 0}
 							</Link>
 							<br />
@@ -128,16 +132,24 @@ const OrdersListItem = ({ order, onSelect, selected, settings }) => {
 						<div className="col-xs-4">
 							<div className={style.shipping}>{shippingTo}</div>
 							<div className={style.shipping}>
-								{order.shippingAddress.address}
+								{order.shippingAddress
+									? order.shippingAddress.shippingAddress
+									: ''}
 							</div>
-							<small className={style.small}>{order.shipping_method}</small>
+							<small className={style.small}>{order.shippingMethod}</small>
 						</div>
 						<div className={'col-xs-2 ' + style.price}>
 							{grandTotalFormatted}
 							<br />
 							<small className={style.small}>{order.payment_method}</small>
 						</div>
-						<div className={'col-xs-2 ' + style.status}>{order.status}</div>
+						<div
+							className={`col-xs-2 ${style.status} ${
+								order.status == 'new' ? style.new : style.processing
+							}`}
+						>
+							{order.status}
+						</div>
 					</div>
 				}
 			/>

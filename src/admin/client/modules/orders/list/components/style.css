@@ -20,6 +20,13 @@
 .status {
   text-align: right;
   font-size: 14px;
+  text-transform: capitalize;
+}
+.new{
+  color:#2ec66d !important;
+}
+.processing{
+  color:rgb(0,142,180) !important;
 }
 
 .more {

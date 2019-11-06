@@ -90,7 +90,7 @@ export default class OrderSummary extends React.Component {
 		const { order, settings, onCheckout, processingCheckout } = this.props;
 		const allowEdit = order.closed === false && order.cancelled === false;
 		const isDraft = order.draft === true;
-		const dateCreated = moment(order.date_placed || order.date_created);
+		const dateCreated = moment(order.createdAt);
 		const dateCreatedFormated = dateCreated.format(
 			`${settings.date_format}, ${settings.time_format}`
 		);
@@ -103,14 +103,14 @@ export default class OrderSummary extends React.Component {
 			referrerDomain = url.hostname;
 		} catch (e) {}
 
-		const referrerLink =
-			order.referrer_url && order.referrer_url.includes('http') ? (
-				<a className={style.link} href={order.referrer_url} target="_blank">
-					{referrerDomain}
-				</a>
-			) : (
-				order.referrer_url
-			);
+		// const referrerLink =
+		// 	order.referrer_url && order.referrer_url.includes('http') ? (
+		// 		<a className={style.link} href={order.referrer_url} target="_blank">
+		// 			{referrerDomain}
+		// 		</a>
+		// 	) : (
+		// 		order.referrer_url
+		// 	);
 
 		return (
 			<Paper className="paper-box" zDepth={1}>
@@ -131,56 +131,56 @@ export default class OrderSummary extends React.Component {
 						<div className="col-xs-7">{order.status}</div>
 					</div>
 
-					<div className={style.summaryRow + ' row'}>
+					{/* <div className={style.summaryRow + ' row'}>
 						<div className="col-xs-5">
 							<span>{messages.referrer}</span>
 						</div>
 						<div className="col-xs-7">{referrerLink}</div>
-					</div>
+					</div> */}
 
-					<div className={style.summaryRow + ' row'}>
+					{/* <div className={style.summaryRow + ' row'}>
 						<div className="col-xs-5">
 							<span>{messages.trackingNumber}</span>
 						</div>
 						<div className="col-xs-7">{order.tracking_number}</div>
-					</div>
+					</div> */}
 
-					<div className={style.summaryRow + ' row'}>
+					{/* <div className={style.summaryRow + ' row'}>
 						<div className="col-xs-5">
 							<span>{messages.shippingStatus}</span>
 						</div>
 						<div className="col-xs-7">{order.shipping_status}</div>
-					</div>
+					</div> */}
 
 					<div className={style.summaryRow + ' row'}>
 						<div className="col-xs-5">
 							<span>{messages.shippingMethod}</span>
 						</div>
-						<div className="col-xs-7">{order.shipping_method}</div>
+						<div className="col-xs-7">{order.shippingMethod}</div>
 					</div>
 
 					<div className={style.summaryRow + ' row'}>
 						<div className="col-xs-5">
 							<span>{messages.paymentsMethod}</span>
 						</div>
-						<div className="col-xs-7">{order.payment_method}</div>
+						<div className="col-xs-7">{order.paymentMethod}</div>
 					</div>
 
 					<div className={style.summaryRow + ' row'}>
 						<div className="col-xs-5">
 							<span>{messages.customerComment}</span>
 						</div>
-						<div className="col-xs-7">{order.comments}</div>
+						<div className="col-xs-7">{order.customerComment}</div>
 					</div>
 
-					<div className={style.summaryRow + ' row'}>
+					{/* <div className={style.summaryRow + ' row'}>
 						<div className="col-xs-5">
 							<span>{messages.note}</span>
 						</div>
 						<div className="col-xs-7">{order.note}</div>
-					</div>
+					</div> */}
 
-					<div style={{ marginTop: 20 }}>
+					{/* <div style={{ marginTop: 20 }}>
 						{allowEdit && (
 							<RaisedButton
 								label="Edit"
@@ -196,7 +196,7 @@ export default class OrderSummary extends React.Component {
 								disabled={processingCheckout}
 							/>
 						)}
-					</div>
+					</div> */}
 
 					<Dialog
 						title={messages.order}

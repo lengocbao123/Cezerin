@@ -3,6 +3,8 @@ import api from 'lib/api';
 import messages from 'lib/text';
 import axios from 'axios';
 import { baseUrl } from '../../../../../config/admin';
+import { orders } from './orders';
+import { APIKey, Authorization } from '../../../../../config/masspa';
 function requestOrder() {
 	return {
 		type: t.ORDER_DETAIL_REQUEST
@@ -222,22 +224,19 @@ export function fetchOrders() {
 
 			axios({
 				method: 'POST',
-				url: `http://192.168.0.34:3000/internal/api/secure/orders/getListOrdersForBranch`,
+				url: `https://dev-api.masspa.vn/internal/api/secure/orders/getListOrdersForBranch`,
 				data: {
-					limit: 5,
+					limit: 15,
 					page: 0,
 					branchCode: 'abfcded0-bbbb-4dcc-af4d-504491f2e6da'
 				},
 				headers: {
-					APIKey:
-						'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjowLjc5NTAyOTg3ODE3MDIzMDcsImlhdCI6MTU3MjMxODgxNSwiZXhwIjoxNjU4NzE4ODE1fQ.UojZGJgX0WbR0SRYMU1Z0SKuAHwlbaVJiW5l1A6ZZ40',
-					Authorization:
-						'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjoie1widXNlckNvZGVcIjpcIjUzN2E3NzQxLWJmMTktNDFlNC1iZmU1LTQ3NTQ2MDE1NDY3NFwiLFwic29jaWFsSWRcIjpudWxsLFwic29jaWFsVHlwZVwiOlwic3lzdGVtXCIsXCJ0eXBlQWNjb3VudFwiOm51bGwsXCJ1c2VybmFtZVwiOlwiOTMyODc5ODEzXCIsXCJmaXJzdE5hbWVcIjpcIk5nYVwiLFwibGFzdE5hbWVcIjpcIkh1eW5oXCIsXCJlbWFpbFwiOlwibmdhMTgxMDk2QGdtYWlsLmNvbVwiLFwiYWRkcmVzc1wiOlwiYWRkIGhpaFwiLFwiY291bnRyeUNvZGVcIjpcIis4NFwiLFwiZG9iXCI6XCIyMDE5LTA1LTA3XCIsXCJpc05vdGlmaWNhdGlvblwiOjEsXCJhY3RpdmVcIjowLFwiZ29vZ2xlVXJsXCI6bnVsbCxcImZhY2Vib29rVXJsXCI6bnVsbCxcInVpZEZpcmVCYXNlXCI6bnVsbCxcIm1vYmlsZVwiOlwiMDkzMjg3OTgxMzRcIixcInNleFwiOjEsXCJuaWNrTmFtZVwiOm51bGwsXCJhdmF0YXJJbWFnZVwiOlwiaHR0cHM6Ly9zdG9yYWdlLmdvb2dsZWFwaXMuY29tL21hc3NwYS1kZXYuYXBwc3BvdC5jb20vYXZhdGFyLzUzN2E3NzQxLWJmMTktNDFlNC1iZmU1LTQ3NTQ2MDE1NDY3NC81MzdhNzc0MS1iZjE5LTQxZTQtYmZlNS00NzU0NjAxNTQ2NzRfMTU2Mzg2MDYyNDk1MC5qcGdcIixcImxvZ2luVGltZVwiOjE1NzIyNTgyMDIyNTIsXCJjcmVhdGVkQXRcIjoxNTU4MzYxMDM4OTUxLFwidXBkYXRlZEF0XCI6MTU3MjIzMDI5NTEwOCxcInJvbGVJZFwiOntcImxvZ2luRnJvbnRlbmRcIjoxLFwibG9naW5BZG1pblwiOjEsXCJyb2xlc1wiOlt7XCJyb2xlXCI6XCJvd25lclNwYVwiLFwic3BhQ29kZVwiOlwiMDc5MTE0Y2QtOTI5Ny00MzI2LWFlNTQtMTc4YTE1ZjM2ZDYzXCJ9XSxcInJvbGVcIjpcIm93bmVyU3BhXCIsXCJzcGFDb2RlXCI6XCIwNzkxMTRjZC05Mjk3LTQzMjYtYWU1NC0xNzhhMTVmMzZkNjNcIixcInNwYU5hbWVcIjpcIktpbSBTcGFcIixcImJyYW5jaENvZGVcIjpcImFiZmNkZWQwLWJiYmItNGRjYy1hZjRkLTUwNDQ5MWYyZTZkYVwiLFwiYnJhbmNoTmFtZVwiOlwiS2ltIFNwYVwifX0iLCJpYXQiOjE1NzIzMTc5MzIsImV4cCI6MTU3MjkyMjczMn0.jfynZYeosjGH4mbeeeB9HStx-Cy6t2-HsIkhgGVQCr0'
+					APIKey: APIKey,
+					Authorization: Authorization
 				}
 			})
 				.then(response => {
 					let result = response.data.data;
-					console.log(result);
 					let data = {
 						total_count: result.total,
 						has_more: false,
@@ -248,6 +247,12 @@ export function fetchOrders() {
 				.catch(error => {
 					dispatch(receiveOrdersError(error));
 				});
+			// let data = {
+			// 	total_count: 3,
+			// 	has_more: false,
+			// 	data: orders
+			// };
+			// dispatch(receiveOrders(data));
 		}
 	};
 }
@@ -396,14 +401,28 @@ export function fetchOrder(orderId) {
 		// 		dispatch(receiveOrder(order));
 		// 	})
 		// 	.catch(error => {});
-		axios({
-			method: 'GET',
-			url: `${baseUrl}/orders/${orderId}`
-		})
-			.then(response => response.data)
-			.then(fetchOrderAdditionalData)
+		// axios({
+		// 	method: 'GET',
+		// 	url: `${baseUrl}/orders/${orderId}`
+		// })
+		// 	.then(response => response.data)
+		// 	.then(fetchOrderAdditionalData)
+		// 	.then(response => {
+		// 		dispatch(receiveOrder(response));
+		// 	})
+		// 	.catch(error => {});
+		axios
+			.get('https://dev-api.masspa.vn/internal/api/secure/orders/findByCode', {
+				params: {
+					orderCode: orderId
+				},
+				headers: {
+					APIKey: APIKey,
+					Authorization: Authorization
+				}
+			})
 			.then(response => {
-				dispatch(receiveOrder(response));
+				dispatch(receiveOrder(response.data.data));
 			})
 			.catch(error => {});
 	};
@@ -424,19 +443,58 @@ export function deleteOrderItem(orderId, orderItemId) {
 	};
 }
 
-export function addOrderItem(orderId, productId) {
+export function addOrderItem(order, product) {
 	return (dispatch, getState) => {
 		const state = getState();
+		// console.log("orderId", order)
 
-		api.orders.items
-			.create(orderId, {
-				product_id: productId,
-				variant_id: null,
+		let {
+			orderCode,
+			customerMobile,
+			customerName,
+			countryCode,
+			branchCode,
+			branchName,
+			item
+		} = order;
+		let newItem = [
+			...item,
+			{
+				itemName: product.name,
+				itemType: 'productType',
+				productId: product.id,
+				itemPrice: product.price,
+				itemCode: new Date().getTime(),
+				itemImage: product.images[0].filename,
+				itemSku: product.sku,
+				itemPath: product.path,
+				itemDetail: '',
 				quantity: 1
-			})
-			.then(orderResponse => orderResponse.json)
-			.then(fetchOrderAdditionalData)
-			.then(order => {
+			}
+		];
+
+		let data = {
+			orderCode: orderCode,
+			query: {
+				customerMobile: customerMobile,
+				customerName: customerName,
+				countryCode: countryCode,
+				branchCode: branchCode,
+				branchName: branchName,
+				item: newItem
+			}
+		};
+		axios({
+			method: 'POST',
+			url: `https://dev-api.masspa.vn/internal/api/secure/orders/update`,
+			data: data,
+			headers: {
+				APIKey: APIKey,
+				Authorization: Authorization
+			}
+		})
+			.then(response => {
+				let order = response.data.data;
 				dispatch(receiveOrder(order));
 			})
 			.catch(error => {});

@@ -16,7 +16,8 @@ import {
 	TableRow,
 	TableRowColumn
 } from 'material-ui/Table';
-
+import { baseUrl } from '../../../../../../config/admin';
+import axios from 'axios';
 const SearchBox = ({ text, onChange }) => {
 	return (
 		<TextField
@@ -64,7 +65,7 @@ export default class ConfirmationDialog extends React.Component {
 			open: props.open,
 			products: [],
 			search: '',
-			selectedId: null
+			selectedProduct: null
 		};
 	}
 
@@ -86,38 +87,40 @@ export default class ConfirmationDialog extends React.Component {
 	handleSubmit = () => {
 		this.setState({ open: false });
 		if (this.props.onSubmit) {
-			this.props.onSubmit(this.state.selectedId);
+			this.props.onSubmit(this.state.selectedProduct);
 		}
 	};
 
 	handleRowSelection = selectedRows => {
 		if (selectedRows && selectedRows.length > 0) {
 			const selectedIndex = selectedRows[0];
-			const selectedProductId =
+			console.log(this.state.products[selectedIndex]);
+			const selectedProduct =
 				this.state.products && this.state.products.length >= selectedIndex
-					? this.state.products[selectedIndex].id
+					? this.state.products[selectedIndex]
 					: null;
 			this.setState({
-				selectedId: selectedProductId
+				selectedProduct: selectedProduct
 			});
 		}
 	};
 
 	handleSearch = (event, value) => {
 		this.setState({ search: value });
-
-		api.products
-			.list({
-				limit: 50,
-				enabled: true,
-				discontinued: false,
-				fields:
-					'id,name,category_id,category_name,sku,enabled,discontinued,price,on_sale,regular_price',
-				search: value
+		axios
+			.get(`${baseUrl}/products`, {
+				params: {
+					limit: 50,
+					enabled: true,
+					discontinued: false,
+					fields:
+						'id,name,category_id,category_name,sku,enabled,discontinued,price,on_sale,regular_price,images,path',
+					search: value
+				}
 			})
 			.then(productsResponse => {
 				this.setState({
-					products: productsResponse.json.data
+					products: productsResponse.data.data
 				});
 			});
 	};
@@ -157,7 +160,9 @@ export default class ConfirmationDialog extends React.Component {
 					<SearchBox text={this.state.search} onChange={this.handleSearch} />
 					<SearchResult
 						products={this.state.products}
-						selectedId={this.state.selectedId}
+						selectedId={
+							this.state.selectedProduct ? this.state.selectedProduct.id : null
+						}
 						onSelect={this.handleRowSelection}
 						settings={settings}
 					/>

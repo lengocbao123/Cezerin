@@ -77,9 +77,9 @@ export default class Buttons extends React.Component {
 		this.setState({ showAddItem: false });
 	};
 
-	addItem = productId => {
+	addItem = product => {
 		this.hideAddItem();
-		this.props.addItem(this.props.order.id, productId);
+		this.props.addItem(this.props.order, product);
 	};
 
 	render() {

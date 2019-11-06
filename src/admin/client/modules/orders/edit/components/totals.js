@@ -10,33 +10,33 @@ import Divider from 'material-ui/Divider';
 
 const OrderTotals = ({ order, settings }) => {
 	const discountTotal = helper.formatCurrency(order.discount_total, settings);
-	const subtotal = helper.formatCurrency(order.subtotal, settings);
+	const subtotal = helper.formatCurrency(order.tempPrice, settings);
 	const taxIncludedTotal = helper.formatCurrency(
 		order.tax_included_total,
 		settings
 	);
 	const taxTotal = helper.formatCurrency(order.tax_total, settings);
 	const shippingTotal = helper.formatCurrency(order.shipping_total, settings);
-	const grandTotal = helper.formatCurrency(order.grand_total, settings);
-	const itemTax = helper.formatCurrency(order.item_tax, settings);
+	const grandTotal = helper.formatCurrency(order.totalPrice, settings);
+	const itemTax = helper.formatCurrency(order.tax, settings);
 	const shippingTax = helper.formatCurrency(order.shipping_tax, settings);
 	const shippingDiscount = helper.formatCurrency(
 		order.shipping_discount,
 		settings
 	);
-	const shippingPrice = helper.formatCurrency(order.shipping_price, settings);
+	const shippingPrice = helper.formatCurrency(order.shippingFee, settings);
 	let discountsDescription =
 		order.coupon && order.coupon.length > 0
 			? ` (${messages.coupon}: ${order.coupon})`
 			: '';
 
-	let transactionsTotal = 0;
-	for (const transaction of order.transactions) {
-		if (transaction.success === true) {
-			transactionsTotal += transaction.amount;
-		}
-	}
-	const paidTotal = helper.formatCurrency(transactionsTotal, settings);
+	// let transactionsTotal = 0;
+	// for (const transaction of order.transactions) {
+	// 	if (transaction.success === true) {
+	// 		transactionsTotal += transaction.amount;
+	// 	}
+	// }
+	const paidTotal = helper.formatCurrency(order.totalPrice, settings);
 
 	return (
 		<div>
@@ -50,7 +50,7 @@ const OrderTotals = ({ order, settings }) => {
 				<div className="col-xs-7">
 					<span>{messages.orderShipping}</span>
 				</div>
-				<div className="col-xs-5">{shippingTotal}</div>
+				<div className="col-xs-5">{shippingPrice}</div>
 			</div>
 			<div className={style.total + ' row'}>
 				<div className="col-xs-7">

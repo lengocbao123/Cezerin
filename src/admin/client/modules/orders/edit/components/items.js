@@ -190,12 +190,14 @@ export class OrderItem extends React.Component {
 		let { quantity } = this.state;
 		const { selectedOptions, selectedVariant } = this.state;
 		const product = item.product;
-		const price = helper.formatCurrency(item.price, settings);
-		const priceTotal = helper.formatCurrency(item.price_total, settings);
-		const discountTotal = helper.formatCurrency(item.discount_total, settings);
-		const imageUrl =
-			product && product.images.length > 0 ? product.images[0].url : null;
-		const thumbnailUrl = helper.getThumbnailUrl(imageUrl, 100);
+		const price = helper.formatCurrency(item.itemPrice, settings);
+		const priceTotal = helper.formatCurrency(
+			item.itemPrice * item.quantity,
+			settings
+		);
+		console.log(typeof item.itemPrice);
+		// const discountTotal = helper.formatCurrency(item.discount_total, settings);
+
 		const productOptions = product ? product.options : [];
 
 		let maxItems = product ? product.stock_quantity : 0;
@@ -228,16 +230,29 @@ export class OrderItem extends React.Component {
 			<div>
 				<div className={style.item + ' row row--no-gutter middle-xs'}>
 					<div className="col-xs-2">
-						{thumbnailUrl &&
-							thumbnailUrl !== '' && (
-								<img src={thumbnailUrl} className={style.itemImage} />
-							)}
+						{item.itemImage ? (
+							<img src={item.itemImage} className={style.itemImage} />
+						) : (
+							<FontIcon
+								style={{ fontSize: 30, color: '#cccccc' }}
+								className="material-icons"
+							>
+								photo_camera
+							</FontIcon>
+						)}
 					</div>
 					<div className={style.itemName + ' col-xs-4'}>
-						<Link to={`/admin/product/${item.product_id}`}>{item.name}</Link>
-						<div>{item.variant_name}</div>
+						<Link to={`/admin/product/${item.productId}`}>{item.itemName}</Link>
+						<div>{item.itemDetail}</div>
+						{item.itemType == 'productType' ? (
+							<div>
+								{messages.products_sku}: {item.itemSku}
+							</div>
+						) : (
+							''
+						)}
 						<div>
-							{messages.products_sku}: {item.sku}
+							{'Type'}: {item.itemType == 'productType' ? 'Product' : 'Service'}
 						</div>
 					</div>
 					<div className="col-xs-2" style={{ textAlign: 'right' }}>
@@ -253,7 +268,7 @@ export class OrderItem extends React.Component {
 						)}
 					</div>
 					<div className="col-xs-1" style={{ textAlign: 'center' }}>
-						{allowEdit && (
+						{item.itemType == 'productType' && (
 							<IconMenu
 								iconButtonElement={iconButtonElement}
 								targetOrigin={{ horizontal: 'right', vertical: 'top' }}
@@ -299,7 +314,7 @@ export class OrderItem extends React.Component {
 
 const OrderItems = ({ order, settings, onItemDelete, onItemUpdate }) => {
 	const allowEdit = order.closed === false && order.cancelled === false;
-	const items = order.items.map((item, index) => (
+	const items = order.item.map((item, index) => (
 		<OrderItem
 			key={index}
 			item={item}
